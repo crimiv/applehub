@@ -21,28 +21,24 @@ SettingsTab:Button({
     Title = "Check for Updates",
     Callback = function()
         local BASE_URL = "https://raw.githubusercontent.com/crimiv/applehub/main/"
-        local success, remoteConfig = pcall(function()
-            return game:HttpGet(BASE_URL .. "shared/config.lua")
+        local success, remoteVersion = pcall(function()
+            return game:HttpGet(BASE_URL .. "version.txt")
         end)
         if success then
-            local fn, err = loadstring(remoteConfig)
-            if fn then
-                local remote = fn()
-                if remote and remote.version then
-                    if remote.version ~= config.version then
-                        WindUI:Notify({
-                            Title = "Update Available",
-                            Content = "New version " .. remote.version .. " is available. Please reload the hub.",
-                            Duration = 5,
-                        })
-                    else
-                        WindUI:Notify({
-                            Title = "No Updates",
-                            Content = "You are on the latest version.",
-                            Duration = 3,
-                        })
-                    end
-                end
+            remoteVersion = remoteVersion:gsub("%s+", "")
+            local currentVersion = APPLE_HUB_VERSION or "1.0.0"
+            if remoteVersion and remoteVersion ~= currentVersion then
+                WindUI:Notify({
+                    Title = "Update Available",
+                    Content = "New version " .. remoteVersion .. " is available. Please reload the hub.",
+                    Duration = 5,
+                })
+            else
+                WindUI:Notify({
+                    Title = "No Updates",
+                    Content = "You are on the latest version.",
+                    Duration = 3,
+                })
             end
         else
             WindUI:Notify({
