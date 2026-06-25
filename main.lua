@@ -1,20 +1,21 @@
---!strict
+local function Fetch(url)
+    return game:HttpGet(url)
+end
 
-local HttpService = game:GetService("HttpService")
+local BASE_URL = "https://raw.githubusercontent.com/crimiv/silverhub/main/"
 
-local Base_Url = "https://raw.githubusercontent.com/crimiv/silverhub/main/"
+local function LoadScript(name)
+    local script = Fetch(BASE_URL .. name)
+    assert(loadstring(script))()
+end
 
-local success, games = pcall(function()
-    return loadstring(game:HttpGet(Base_Url .. "gamelist.lua"))()
-end)
+local gamesList = Fetch(BASE_URL .. "games.lua")
+local games = assert(loadstring(gamesList))()
 
-if not success or type(games) ~= "table" then
+local placeId = game.PlaceId or game.GameId
+local gameEntry = games[placeId]
+if not gameEntry then
     return
 end
 
-local scriptPath = games[game.PlaceId] or games[game.GameId]
-if not scriptPath then
-    return
-end
-
-loadstring(game:HttpGet(Base_Url .. HttpService:UrlEncode(scriptPath)))()
+LoadScript(gameEntry)
