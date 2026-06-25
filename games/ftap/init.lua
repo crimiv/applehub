@@ -18,6 +18,26 @@ SilverHub.Config = config
 
 local version = config.version or "1.0.0"
 
+local function CheckExecutor()
+    local missing = {}
+    if not hookmetamethod then table.insert(missing, "hookmetamethod") end
+    if not getnamecallmethod then table.insert(missing, "getnamecallmethod") end
+    if not newcclosure then table.insert(missing, "newcclosure") end
+    if #missing > 0 then
+        WindUI:Notify({
+            Title = "Executor Incompatible",
+            Content = "Missing functions: " .. table.concat(missing, ", ") .. ". Hub will not load.",
+            Duration = 5,
+        })
+        return false
+    end
+    return true
+end
+
+if not CheckExecutor() then
+    return
+end
+
 local Window = WindUI:CreateWindow({
     Title = "Apple Hub v" .. version,
     Author = "by coolio",
@@ -60,28 +80,4 @@ task.spawn(function()
     end
 end)
 
-local function CheckExecutor()
-    local missing = {}
-    if not hookmetamethod then table.insert(missing, "hookmetamethod") end
-    if not getnamecallmethod then table.insert(missing, "getnamecallmethod") end
-    if not newcclosure then table.insert(missing, "newcclosure") end
-    if #missing > 0 then
-        WindUI:Notify({
-            Title = "Executor Incompatible",
-            Content = "Missing functions: " .. table.concat(missing, ", ") .. ". Silent Aim will not work.",
-            Duration = 5,
-        })
-        return false
-    end
-    return true
-end
-
-if CheckExecutor() then
-    LoadScript("games/ftap/aimbot.lua")
-else
-    WindUI:Notify({
-        Title = "Silent Aim Disabled",
-        Content = "Your executor does not support the required hooks.",
-        Duration = 5,
-    })
-end
+LoadScript("games/ftap/aimbot.lua")
