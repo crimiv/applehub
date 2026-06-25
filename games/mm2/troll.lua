@@ -64,7 +64,52 @@ local function FlingPlayer(target, silent)
         return velocity, angular, maxForceY
     end
 
-    local function ChooseFlingMovement(localChar)
+    local function OptimizeMovementParams(localChar, tHrp, targetStartPos)
+        local mass = GetCharacterMass(localChar)
+        local accessoryCount = 0
+        for _, v in ipairs(localChar:GetChildren()) do
+            if v:IsA("Accessory") then accessoryCount = accessoryCount + 1 end
+        end
+        local baseAmp = 1 + (accessoryCount * 0.5)
+        local baseFreq = 6
+        local candidates = {}
+        for _, aScale in ipairs({0.7, 1, 1.4}) do
+            for _, fScale in ipairs({0.7, 1, 1.4}) do
+                table.insert(candidates, { amp = baseAmp * aScale, freq = baseFreq * fScale })
+            end
+        end
+        local best = candidates[1]
+        local bestScore = -math.huge
+        local originalPos = hrp and hrp.CFrame
+        for _, cand in ipairs(candidates) do
+            local start = tick()
+            local stop = start + 0.12
+            local peak = 0
+            while tick() < stop do
+                local t = tick() - start
+                local x = math.sin(t * cand.freq * 2) * cand.amp
+                local y = math.abs(math.sin(t * cand.freq * 1.2)) * (2 + mass * 0.02)
+                local z = math.cos(t * cand.freq * 1.4) * (cand.amp * 0.6)
+                local ok = pcall(function()
+                    if hrp and tHrp then
+                        hrp.CFrame = tHrp.CFrame * CFrame.new(Vector3.new(x, y, z))
+                    end
+                end)
+                if tHrp then
+                    peak = math.max(peak, tHrp.Velocity.Magnitude, (tHrp.Position - targetStartPos).Magnitude)
+                end
+                task.wait(0.02)
+            end
+            if peak > bestScore then
+                bestScore = peak
+                best = cand
+            end
+        end
+        if originalPos and hrp then hrp.CFrame = originalPos end
+        return best
+    end
+
+    local function ChooseFlingMovement(localChar, bestParams)
         local hum = localChar and localChar:FindFirstChildOfClass("Humanoid")
         local rig = hum and hum.RigType or Enum.HumanoidRigType.R15
         local mass = GetCharacterMass(localChar)
@@ -72,33 +117,52 @@ local function FlingPlayer(target, silent)
         for _, v in ipairs(localChar:GetChildren()) do
             if v:IsA("Accessory") then accessoryCount = accessoryCount + 1 end
         end
-        -- Heavier avatars or many accessories favor wide lateral zigzags
+        -- Tunable factors derived from avatar properties
+        local massFactor = mass / 50
+        local accessoryFactor = accessoryCount / 4
+        local baseAmp = math.clamp(1 + accessoryFactor * 2 + massFactor * 1.5, 0.5, 14)
+        local baseFreq = math.clamp(6 - massFactor * 1.2 - accessoryFactor * 0.6, 1.2, 14)
+        local verticalScale = math.clamp(2 + massFactor * 3 + accessoryFactor * 1.2, 1, 30)
+        -- Slight adjustments per rig
+        if rig == Enum.HumanoidRigType.R6 then
+            baseAmp = baseAmp * 1.15
+            baseFreq = math.max(1.2, baseFreq * 1.05)
+            verticalScale = verticalScale * 1.25
+        else
+            baseAmp = baseAmp * 1.0
+            baseFreq = baseFreq * 1.0
+        end
+
+        -- Select movement pattern, tuned with computed amp/freq/verticalScale
         if accessoryCount >= 6 or mass > 120 then
             return function(startTime)
                 local t = tick() - startTime
-                local amp = math.clamp(2 + (accessoryCount * 0.4), 2, 8)
-                local freq = math.clamp(4 - (accessoryCount * 0.15), 1.5, 6)
+                local amp = baseAmp * 1.2
+                local freq = baseFreq * 0.85
                 local x = math.sin(t * freq * 2) * amp
-                local y = math.abs(math.sin(t * freq * 1.2)) * (2 + mass * 0.02)
+                local y = math.abs(math.sin(t * freq * 1.2)) * verticalScale
                 local z = math.cos(t * freq * 1.4) * (amp * 0.6)
                 return Vector3.new(x, y, z)
             end
         end
-        -- R6 gets stronger vertical pulses
+
         if rig == Enum.HumanoidRigType.R6 then
             return function(startTime)
                 local t = tick() - startTime
-                local y = math.sin(t * 12) * (4 + mass * 0.03)
-                return Vector3.new(0, y, 0)
+                local freq = baseFreq * 2.0
+                local y = math.sin(t * freq) * verticalScale * 1.2
+                local x = math.sin(t * (freq * 0.8)) * (baseAmp * 0.6)
+                return Vector3.new(x, y, 0)
             end
         end
-        -- Default R15 / light avatars: spin + vertical jerks
+
         return function(startTime)
             local t = tick() - startTime
-            local amp = 1 + (accessoryCount * 0.5)
-            local x = math.sin(t * 8) * amp
-            local y = math.abs(math.sin(t * 6)) * (3 + mass * 0.02)
-            local z = math.cos(t * 5) * (amp * 0.6)
+            local amp = baseAmp
+            local freq = baseFreq
+            local x = math.sin(t * freq * 1.3) * amp
+            local y = math.abs(math.sin(t * freq * 0.95)) * verticalScale
+            local z = math.cos(t * freq * 0.9) * (amp * 0.7)
             return Vector3.new(x, y, z)
         end
     end
@@ -117,7 +181,8 @@ local function FlingPlayer(target, silent)
     bav.AngularVelocity = Vector3.new(angularMag, angularMag, angularMag)
     bav.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
     bav.Parent = hrp
-    local movementFunc = ChooseFlingMovement(localPlayer.Character)
+    local bestParams = OptimizeMovementParams(localPlayer.Character, tHrp, targetStartPos)
+    local movementFunc = ChooseFlingMovement(localPlayer.Character, bestParams)
     local startTime = tick()
     local timeout = startTime + 3
     while tick() < timeout and not launched do
