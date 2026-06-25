@@ -31,16 +31,6 @@ function AppleHub.PlayerHasTool(player, toolName)
 end
 
 function AppleHub.Notify(params)
-    local success, result = pcall(function()
-        local title = params.Title or ""
-        local text = params.Content or params.Text or ""
-        local duration = params.Duration or 3
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = title,
-            Text = text,
-            Duration = duration,
-        })
-    end)
 end
 
 return AppleHub

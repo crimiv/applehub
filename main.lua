@@ -36,20 +36,6 @@ local function PerformUpdate(newVersion)
             AppleHub.DisableAll()
         end
     end
-    local WindUI = AppleHub and AppleHub.WindUI
-    if WindUI then
-        WindUI:Notify({
-            Title = "Updating",
-            Content = "Updating to v" .. newVersion .. "...",
-            Duration = 3,
-        })
-    else
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Updating",
-            Text = "Updating to v" .. newVersion .. "...",
-            Duration = 3,
-        })
-    end
     task.wait(1)
     _G.APPLE_HUB_UPDATING = false
     loadstring(game:HttpGet(BASE_URL .. "main.lua"))()

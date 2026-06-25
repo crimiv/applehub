@@ -35,6 +35,34 @@ local function TeleportToLobby()
     utils.Notify({ Title = "Error", Content = "No BasePart found in lobby", Duration = 2 })
 end
 
+local function FindCurrentMapContainer()
+    local mapNames = {"House2", "BioLab", "Office3", "Hospital3", "Factory", "MilBase", "Bank2", "Hotel2", "Mansion2", "PoliceStation", "ResearchFacility", "Workplace"}
+    for _, name in ipairs(mapNames) do
+        local map = workspace:FindFirstChild(name)
+        if map then
+            local coinContainer = map:FindFirstChild("CoinContainer")
+            if coinContainer then
+                return coinContainer
+            end
+            return map
+        end
+    end
+    for _, child in ipairs(workspace:GetChildren()) do
+        if child:IsA("Model") or child:IsA("Folder") then
+            local coinContainer = child:FindFirstChild("CoinContainer")
+            if coinContainer then
+                return coinContainer
+            end
+            for _, descendant in ipairs(child:GetDescendants()) do
+                if descendant:IsA("BasePart") then
+                    return child
+                end
+            end
+        end
+    end
+    return nil
+end
+
 local function TeleportToCurrentMap()
     local localPlayer = game.Players.LocalPlayer
     if not localPlayer then
@@ -51,31 +79,7 @@ local function TeleportToCurrentMap()
         utils.Notify({ Title = "Error", Content = "HumanoidRootPart not found", Duration = 2 })
         return
     end
-    local currentMapContainer = nil
-    if currentMap then
-        local map = workspace:FindFirstChild(currentMap)
-        if map then
-            currentMapContainer = map:FindFirstChild("CoinContainer")
-            if not currentMapContainer then
-                currentMapContainer = map
-            end
-        end
-    end
-    if not currentMapContainer then
-        local mapNames = {"House2", "BioLab", "Office3", "Hospital3", "Factory", "MilBase", "Bank2", "Hotel2", "Mansion2", "PoliceStation", "ResearchFacility", "Workplace"}
-        for _, name in ipairs(mapNames) do
-            local map = workspace:FindFirstChild(name)
-            if map then
-                local coinContainer = map:FindFirstChild("CoinContainer")
-                if coinContainer then
-                    currentMapContainer = coinContainer
-                    break
-                else
-                    currentMapContainer = map
-                end
-            end
-        end
-    end
+    local currentMapContainer = FindCurrentMapContainer()
     if not currentMapContainer then
         utils.Notify({ Title = "Error", Content = "Could not find current map", Duration = 2 })
         return
@@ -84,16 +88,14 @@ local function TeleportToCurrentMap()
     if currentMapContainer:IsA("BasePart") then
         targetPart = currentMapContainer
     else
-        local parts = currentMapContainer:GetDescendants()
-        for _, part in ipairs(parts) do
+        for _, part in ipairs(currentMapContainer:GetDescendants()) do
             if part:IsA("BasePart") then
                 targetPart = part
                 break
             end
         end
         if not targetPart then
-            local children = currentMapContainer:GetChildren()
-            for _, child in ipairs(children) do
+            for _, child in ipairs(currentMapContainer:GetChildren()) do
                 if child:IsA("BasePart") then
                     targetPart = child
                     break

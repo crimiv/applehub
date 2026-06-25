@@ -13,11 +13,6 @@ local function CheckExecutor()
     if not getnamecallmethod then table.insert(missing, "getnamecallmethod") end
     if not newcclosure then table.insert(missing, "newcclosure") end
     if #missing > 0 then
-        game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "Executor Incompatible",
-            Text = "Missing functions: " .. table.concat(missing, ", ") .. ". Silent Aim will not work.",
-            Duration = 5,
-        })
         return false
     end
     return true
