@@ -34,66 +34,6 @@ local function IsInLobby()
     return rootPart:IsDescendantOf(lobby)
 end
 
-local function TeleportToLobby()
-    local localPlayer = game.Players.LocalPlayer
-    if not localPlayer then return end
-    local character = localPlayer.Character
-    if not character then return end
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    if not rootPart then return end
-    local lobby = workspace:FindFirstChild("RegularLobby")
-    if not lobby then return end
-    local parts = lobby:GetDescendants()
-    for _, part in ipairs(parts) do
-        if part:IsA("BasePart") then
-            rootPart.CFrame = part.CFrame
-            break
-        end
-    end
-end
-
-local function ShouldTeleportToLobby()
-    local localPlayer = game.Players.LocalPlayer
-    if not localPlayer then return false end
-    if IsInLobby() then return false end
-    local hasGun = utils.PlayerHasTool(localPlayer, "Gun")
-    if not hasGun then return false end
-    local autoTP = AppleHub.Toggles.autoGunTPEnabled or false
-    local autoShoot = AppleHub.Toggles.autoShootEnabled or false
-    return autoTP and autoShoot
-end
-
-local function SetupLobbyTPOnGun()
-    local localPlayer = game.Players.LocalPlayer
-    if not localPlayer then return end
-    local function onGunAdded()
-        if ShouldTeleportToLobby() then
-            TeleportToLobby()
-        end
-    end
-    local backpack = localPlayer:FindFirstChild("Backpack")
-    if backpack then
-        backpack.ChildAdded:Connect(function(child)
-            if child.Name == "Gun" then
-                onGunAdded()
-            end
-        end)
-    end
-    local character = localPlayer.Character
-    if character then
-        character.ChildAdded:Connect(function(child)
-            if child.Name == "Gun" then
-                onGunAdded()
-            end
-        end)
-    end
-    if utils.PlayerHasTool(localPlayer, "Gun") then
-        onGunAdded()
-    end
-end
-
-task.spawn(SetupLobbyTPOnGun)
-
 local autoShootEnabled = AppleHub.Toggles.autoShootEnabled or false
 local AUTO_SHOOT_COOLDOWN = config.cooldowns.autoShoot
 local lastAutoShootTime = 0
@@ -264,6 +204,61 @@ CombatTab:Button({
             WindUI:Notify({ Title = "Kill All", Content = "Killed " .. killed .. " players!", Duration = 2 })
         else
             WindUI:Notify({ Title = "Kill All", Content = "No valid players to kill", Duration = 2 })
+        end
+    end
+})
+
+CombatTab:Button({
+    Title = "Kill All Except Sheriff",
+    Callback = function()
+        if _G.APPLE_HUB_UPDATING then return end
+        local localPlayer = game.Players.LocalPlayer
+        if not localPlayer then
+            WindUI:Notify({ Title = "Error", Content = "Local player not found", Duration = 2 })
+            return
+        end
+        local knife = nil
+        local backpack = localPlayer:FindFirstChild("Backpack")
+        if backpack then
+            for _, tool in ipairs(backpack:GetChildren()) do
+                if tool:IsA("Tool") and tool.Name == "Knife" then
+                    knife = tool
+                    break
+                end
+            end
+        end
+        if not knife and localPlayer.Character then
+            for _, tool in ipairs(localPlayer.Character:GetChildren()) do
+                if tool:IsA("Tool") and tool.Name == "Knife" then
+                    knife = tool
+                    break
+                end
+            end
+        end
+        if not knife then
+            WindUI:Notify({ Title = "Error", Content = "You are not the murderer (no knife found)", Duration = 2 })
+            return
+        end
+        local handleTouched = knife:FindFirstChild("Events") and knife.Events:FindFirstChild("HandleTouched")
+        if not handleTouched or not handleTouched:IsA("RemoteEvent") then
+            WindUI:Notify({ Title = "Error", Content = "HandleTouched remote not found", Duration = 2 })
+            return
+        end
+        local sheriff = AppleHub.GetCurrentSheriff()
+        local killed = 0
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= localPlayer and player ~= sheriff and player.Character then
+                local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+                if rootPart then
+                    handleTouched:FireServer(rootPart)
+                    killed = killed + 1
+                end
+            end
+        end
+        if killed > 0 then
+            WindUI:Notify({ Title = "Kill All Except Sheriff", Content = "Killed " .. killed .. " players!", Duration = 2 })
+        else
+            WindUI:Notify({ Title = "Kill All Except Sheriff", Content = "No valid players to kill", Duration = 2 })
         end
     end
 })
