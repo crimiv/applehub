@@ -200,6 +200,7 @@ VisualTab:Toggle({
     Callback = function(state)
         espEnabled = state
         AppleHub.Toggles.espEnabled = state
+        if AppleHub.SaveSettings then AppleHub.SaveSettings() end
         WindUI:Notify({
             Title = "ESP",
             Content = espEnabled and "ESP Enabled" or "ESP Disabled",
@@ -220,5 +221,6 @@ AppleHub.playerRoles = playerRoles
 AppleHub.DisableAll = function()
     espEnabled = false
     AppleHub.Toggles.espEnabled = false
+    if AppleHub.SaveSettings then AppleHub.SaveSettings() end
     ClearESP()
 end
