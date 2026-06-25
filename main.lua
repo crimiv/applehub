@@ -15,6 +15,7 @@ local games = assert(loadstring(gamesList))()
 local placeId = game.PlaceId or game.GameId
 local gameEntry = games[placeId]
 if not gameEntry then
+    LoadScript("games/universal/init.lua")
     return
 end
 
