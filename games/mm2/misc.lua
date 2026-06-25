@@ -121,5 +121,81 @@ MiscTab:Button({
     end
 })
 
+MiscTab:Button({
+    Title = "Teleport to Murderer",
+    Callback = function()
+        local localPlayer = game.Players.LocalPlayer
+        if not localPlayer then
+            WindUI:Notify({ Title = "Error", Content = "Local player not found", Duration = 2 })
+            return
+        end
+        local murderer = AppleHub.GetCurrentMurderer()
+        if not murderer then
+            WindUI:Notify({ Title = "Error", Content = "No murderer found", Duration = 2 })
+            return
+        end
+        local targetCharacter = murderer.Character
+        if not targetCharacter then
+            WindUI:Notify({ Title = "Error", Content = "Murderer has no character", Duration = 2 })
+            return
+        end
+        local targetRoot = targetCharacter:FindFirstChild("HumanoidRootPart")
+        if not targetRoot then
+            WindUI:Notify({ Title = "Error", Content = "Murderer has no HumanoidRootPart", Duration = 2 })
+            return
+        end
+        local localCharacter = localPlayer.Character
+        if not localCharacter then
+            WindUI:Notify({ Title = "Error", Content = "Your character not found", Duration = 2 })
+            return
+        end
+        local localRoot = localCharacter:FindFirstChild("HumanoidRootPart")
+        if not localRoot then
+            WindUI:Notify({ Title = "Error", Content = "Your HumanoidRootPart not found", Duration = 2 })
+            return
+        end
+        localRoot.CFrame = targetRoot.CFrame
+        WindUI:Notify({ Title = "Misc", Content = "Teleported to murderer", Duration = 2 })
+    end
+})
+
+MiscTab:Button({
+    Title = "Teleport to Sheriff",
+    Callback = function()
+        local localPlayer = game.Players.LocalPlayer
+        if not localPlayer then
+            WindUI:Notify({ Title = "Error", Content = "Local player not found", Duration = 2 })
+            return
+        end
+        local sheriff = AppleHub.GetCurrentSheriff()
+        if not sheriff then
+            WindUI:Notify({ Title = "Error", Content = "No sheriff found", Duration = 2 })
+            return
+        end
+        local targetCharacter = sheriff.Character
+        if not targetCharacter then
+            WindUI:Notify({ Title = "Error", Content = "Sheriff has no character", Duration = 2 })
+            return
+        end
+        local targetRoot = targetCharacter:FindFirstChild("HumanoidRootPart")
+        if not targetRoot then
+            WindUI:Notify({ Title = "Error", Content = "Sheriff has no HumanoidRootPart", Duration = 2 })
+            return
+        end
+        local localCharacter = localPlayer.Character
+        if not localCharacter then
+            WindUI:Notify({ Title = "Error", Content = "Your character not found", Duration = 2 })
+            return
+        end
+        local localRoot = localCharacter:FindFirstChild("HumanoidRootPart")
+        if not localRoot then
+            WindUI:Notify({ Title = "Error", Content = "Your HumanoidRootPart not found", Duration = 2 })
+            return
+        end
+        localRoot.CFrame = targetRoot.CFrame
+        WindUI:Notify({ Title = "Misc", Content = "Teleported to sheriff", Duration = 2 })
+    end
+})
+
 game.Players.PlayerAdded:Connect(CreatePlayerDropdown)
 game.Players.PlayerRemoving:Connect(CreatePlayerDropdown)
