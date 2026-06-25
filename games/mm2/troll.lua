@@ -1,8 +1,8 @@
-local WindUI = SilverHub.WindUI
-local utils = SilverHub.Utils
-local config = SilverHub.Config
+local WindUI = AppleHub.WindUI
+local utils = AppleHub.Utils
+local config = AppleHub.Config
 
-local TrollTab = SilverHub.Window:Tab({ Title = "Troll" })
+local TrollTab = AppleHub.Window:Tab({ Title = "Troll" })
 
 local function IsSeated(player)
     local char = player.Character
@@ -12,6 +12,7 @@ end
 
 local function FlingPlayer(target, silent)
     if not target or target == game.Players.LocalPlayer then
+        if not silent then WindUI:Notify({ Title = "Fling", Content = "Invalid target", Duration = 2 }) end
         return false
     end
     local localPlayer = game.Players.LocalPlayer
@@ -20,9 +21,11 @@ local function FlingPlayer(target, silent)
     local tHrp = tChar and tChar:FindFirstChild("HumanoidRootPart")
     local tHum = tChar and tChar:FindFirstChildOfClass("Humanoid")
     if not hrp or not tHrp or not tHum or tHum.Health <= 0 then
+        if not silent then WindUI:Notify({ Title = "Fling", Content = "Target invalid or dead", Duration = 2 }) end
         return false
     end
     if IsSeated(target) then
+        if not silent then WindUI:Notify({ Title = "Fling", Content = "Target is seated", Duration = 2 }) end
         return false
     end
     local originalFPDH = workspace.FallenPartsDestroyHeight
@@ -54,15 +57,22 @@ local function FlingPlayer(target, silent)
     hrp.RotVelocity = Vector3.new(0,0,0)
     hrp.CFrame = oldPos
     workspace.FallenPartsDestroyHeight = originalFPDH
+    if launched then
+        if not silent then WindUI:Notify({ Title = "Fling", Content = "Flung " .. target.Name, Duration = 2 }) end
+    else
+        if not silent then WindUI:Notify({ Title = "Fling", Content = "Failed to fling " .. target.Name, Duration = 2 }) end
+    end
     return launched
 end
 
 TrollTab:Button({
     Title = "Fling Murderer",
     Callback = function()
-        local murderer = SilverHub.GetCurrentMurderer()
+        local murderer = AppleHub.GetCurrentMurderer()
         if murderer then
             FlingPlayer(murderer, false)
+        else
+            WindUI:Notify({ Title = "Fling", Content = "No murderer found", Duration = 2 })
         end
     end
 })
@@ -70,9 +80,11 @@ TrollTab:Button({
 TrollTab:Button({
     Title = "Fling Sheriff",
     Callback = function()
-        local sheriff = SilverHub.GetCurrentSheriff()
+        local sheriff = AppleHub.GetCurrentSheriff()
         if sheriff then
             FlingPlayer(sheriff, false)
+        else
+            WindUI:Notify({ Title = "Fling", Content = "No sheriff found", Duration = 2 })
         end
     end
 })
@@ -87,13 +99,18 @@ TrollTab:Toggle({
     Value = false,
     Callback = function(state)
         autoFlingMurdererEnabled = state
+        WindUI:Notify({
+            Title = "Auto Fling Murderer",
+            Content = autoFlingMurdererEnabled and "Enabled" or "Disabled",
+            Duration = 2,
+        })
         if autoFlingMurdererEnabled then
             if autoFlingMurdererCoroutine then
                 autoFlingMurdererCoroutine = nil
             end
             autoFlingMurdererCoroutine = coroutine.create(function()
                 while autoFlingMurdererEnabled do
-                    local target = SilverHub.GetCurrentMurderer()
+                    local target = AppleHub.GetCurrentMurderer()
                     if target then
                         local launched = FlingPlayer(target, true)
                         if launched then
@@ -120,13 +137,18 @@ TrollTab:Toggle({
     Value = false,
     Callback = function(state)
         autoFlingSheriffEnabled = state
+        WindUI:Notify({
+            Title = "Auto Fling Sheriff",
+            Content = autoFlingSheriffEnabled and "Enabled" or "Disabled",
+            Duration = 2,
+        })
         if autoFlingSheriffEnabled then
             if autoFlingSheriffCoroutine then
                 autoFlingSheriffCoroutine = nil
             end
             autoFlingSheriffCoroutine = coroutine.create(function()
                 while autoFlingSheriffEnabled do
-                    local target = SilverHub.GetCurrentSheriff()
+                    local target = AppleHub.GetCurrentSheriff()
                     if target then
                         local launched = FlingPlayer(target, true)
                         if launched then
@@ -190,6 +212,7 @@ TrollTab:Button({
     Title = "Refresh Players",
     Callback = function()
         CreateFlingDropdown()
+        WindUI:Notify({ Title = "Fling Player", Content = "Player list refreshed", Duration = 2 })
     end
 })
 
@@ -197,10 +220,12 @@ TrollTab:Button({
     Title = "Fling Selected Player",
     Callback = function()
         if not selectedFlingPlayer or selectedFlingPlayer == "No other players" then
+            WindUI:Notify({ Title = "Error", Content = "No valid player selected", Duration = 2 })
             return
         end
         local targetPlayer = game.Players:FindFirstChild(selectedFlingPlayer)
         if not targetPlayer then
+            WindUI:Notify({ Title = "Error", Content = "Selected player not found", Duration = 2 })
             return
         end
         task.spawn(function()
@@ -223,6 +248,11 @@ TrollTab:Toggle({
     Value = false,
     Callback = function(state)
         loopFlingSelectedEnabled = state
+        WindUI:Notify({
+            Title = "Loop Fling Selected Player",
+            Content = loopFlingSelectedEnabled and "Enabled" or "Disabled",
+            Duration = 2,
+        })
         if loopFlingSelectedEnabled then
             if loopFlingSelectedCoroutine then
                 loopFlingSelectedCoroutine = nil
