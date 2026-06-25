@@ -4,6 +4,24 @@ local config = SilverHub.Config
 
 local CombatTab = SilverHub.Window:Tab({ Title = "Combat" })
 
+local roundTimer = workspace:FindFirstChild("RoundTimerPart")
+
+local function IsPlayerAlive()
+    local localPlayer = game.Players.LocalPlayer
+    if not localPlayer then return false end
+    local character = localPlayer.Character
+    if not character then return false end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return false end
+    return humanoid.Health > 0
+end
+
+local function IsRoundActive()
+    if not roundTimer then return true end
+    local time = roundTimer:GetAttribute("Time") or -1
+    return time > 0
+end
+
 local autoShootEnabled = false
 local AUTO_SHOOT_COOLDOWN = config.cooldowns.autoShoot
 local lastAutoShootTime = 0
@@ -262,6 +280,7 @@ local isTeleporting = false
 
 local function TeleportToGunDrop(gunDrop)
     if not gunDrop or isTeleporting then return end
+    if not IsPlayerAlive() or not IsRoundActive() then return end
     local localPlayer = game.Players.LocalPlayer
     if not localPlayer then return end
     local character = localPlayer.Character
@@ -317,6 +336,7 @@ CombatTab:Button({
     Callback = function()
         local localPlayer = game.Players.LocalPlayer
         if not localPlayer then return end
+        if not IsPlayerAlive() or not IsRoundActive() then return end
         if utils.PlayerHasTool(localPlayer, "Knife") then return end
         local gunDrop = GetClosestGunDrop()
         if not gunDrop then return end
@@ -353,6 +373,7 @@ end
 
 local function TryTeleportToGun()
     if not autoGunTPEnabled or isTeleporting then return end
+    if not IsPlayerAlive() or not IsRoundActive() then return end
     local localPlayer = game.Players.LocalPlayer
     if not localPlayer then return end
     if utils.PlayerHasTool(localPlayer, "Knife") then return end
