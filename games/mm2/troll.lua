@@ -1,12 +1,8 @@
 local WindUI = LinuxHub.WindUI
 local utils = LinuxHub.Utils
 local config = LinuxHub.Config
-local Players = game:GetService("Players")
 
 local TrollTab = LinuxHub.Window:Tab({ Title = "Troll" })
-
-local FlungPlayers = {}
-local OriginalFPDH = workspace.FallenPartsDestroyHeight
 
 local function IsSeated(player)
     local char = player.Character
@@ -14,63 +10,18 @@ local function IsSeated(player)
     return hum and (hum.SeatPart or hum:GetState() == Enum.HumanoidStateType.Seated)
 end
 
-local function WasLaunched(target, startPos)
-    local tHrp = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
-    if not tHrp then return true end
-    return (tHrp.Position - startPos).Magnitude > 60 or tHrp.Velocity.Magnitude > 180
-end
-
-local function SmartFling(target)
-    local localPlayer = Players.LocalPlayer
+local function FlingPlayer(target, silent)
+    if _G.LINUXHUB_UPDATING then return false end
+    if not target or target == game.Players.LocalPlayer then
+        if not silent then WindUI:Notify({ Title = "Fling", Content = "Invalid target", Duration = 2 }) end
+        return false
+    end
+    local localPlayer = game.Players.LocalPlayer
     local hrp = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
     local tChar = target.Character
     local tHrp = tChar and tChar:FindFirstChild("HumanoidRootPart")
     local tHum = tChar and tChar:FindFirstChildOfClass("Humanoid")
     if not hrp or not tHrp or not tHum or tHum.Health <= 0 then
-        return false
-    end
-
-    local oldPos = hrp.CFrame
-    local targetStartPos = tHrp.Position
-    local launched = false
-    workspace.FallenPartsDestroyHeight = 0/0
-    local startTime = tick()
-    while tick() - startTime < 0.7 and target.Parent and tHum.Health > 0 do
-        hrp.CFrame = tHrp.CFrame
-        hrp.Velocity = Vector3.new(0, 1000000, 0)
-        hrp.RotVelocity = Vector3.new(1000000, 1000000, 1000000)
-        if WasLaunched(target, targetStartPos) then
-            launched = true
-            FlungPlayers[target.UserId] = true
-            task.delay(5, function()
-                FlungPlayers[target.UserId] = nil
-            end)
-            break
-        end
-        task.wait()
-    end
-    hrp.Velocity = Vector3.new(0, 0, 0)
-    hrp.RotVelocity = Vector3.new(0, 0, 0)
-    hrp.CFrame = oldPos
-    workspace.FallenPartsDestroyHeight = OriginalFPDH
-    return launched
-end
-
-local function FlingPlayer(target, silent)
-    if _G.LINUXHUB_UPDATING then return false end
-    if not target or target == Players.LocalPlayer then
-        if not silent then WindUI:Notify({ Title = "Fling", Content = "Invalid target", Duration = 2 }) end
-        return false
-    end
-    if FlungPlayers[target.UserId] then
-        if not silent then WindUI:Notify({ Title = "Fling", Content = "Target is already being flung", Duration = 2 }) end
-        return false
-    end
-
-    local tChar = target.Character
-    local tHrp = tChar and tChar:FindFirstChild("HumanoidRootPart")
-    local tHum = tChar and tChar:FindFirstChildOfClass("Humanoid")
-    if not tHrp or not tHum or tHum.Health <= 0 then
         if not silent then WindUI:Notify({ Title = "Fling", Content = "Target invalid or dead", Duration = 2 }) end
         return false
     end
@@ -78,8 +29,36 @@ local function FlingPlayer(target, silent)
         if not silent then WindUI:Notify({ Title = "Fling", Content = "Target is seated", Duration = 2 }) end
         return false
     end
-
-    local launched = SmartFling(target)
+    local originalFPDH = workspace.FallenPartsDestroyHeight
+    workspace.FallenPartsDestroyHeight = 0/0
+    local oldPos = hrp.CFrame
+    local targetStartPos = tHrp.Position
+    local launched = false
+    local bv = Instance.new("BodyVelocity")
+    bv.Velocity = Vector3.new(0, 1000000, 0)
+    bv.MaxForce = Vector3.new(0, math.huge, 0)
+    bv.Parent = hrp
+    local bav = Instance.new("BodyAngularVelocity")
+    bav.AngularVelocity = Vector3.new(1000000, 1000000, 1000000)
+    bav.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    bav.Parent = hrp
+    local timeout = tick() + 3
+    while tick() < timeout and not launched do
+        if _G.LINUXHUB_UPDATING then break end
+        if not target.Parent or tHum.Health <= 0 then break end
+        hrp.CFrame = tHrp.CFrame
+        if (tHrp.Position - targetStartPos).Magnitude > 60 or tHrp.Velocity.Magnitude > 180 then
+            launched = true
+            break
+        end
+        task.wait()
+    end
+    bv:Destroy()
+    bav:Destroy()
+    hrp.Velocity = Vector3.new(0,0,0)
+    hrp.RotVelocity = Vector3.new(0,0,0)
+    hrp.CFrame = oldPos
+    workspace.FallenPartsDestroyHeight = originalFPDH
     if launched then
         if not silent then WindUI:Notify({ Title = "Fling", Content = "Flung " .. target.Name, Duration = 2 }) end
     else
