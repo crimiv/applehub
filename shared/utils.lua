@@ -1,6 +1,6 @@
-local SilverHub = {}
+local AppleHub = {}
 
-function SilverHub.GetPlayerFromArg(arg)
+function AppleHub.GetPlayerFromArg(arg)
     if typeof(arg) == "Instance" and arg:IsA("Player") then
         return arg
     elseif type(arg) == "string" then
@@ -9,7 +9,7 @@ function SilverHub.GetPlayerFromArg(arg)
     return nil
 end
 
-function SilverHub.PlayerHasTool(player, toolName)
+function AppleHub.PlayerHasTool(player, toolName)
     if not player then return false end
     local backpack = player:FindFirstChild("Backpack")
     if backpack then
@@ -30,4 +30,4 @@ function SilverHub.PlayerHasTool(player, toolName)
     return false
 end
 
-return SilverHub
+return AppleHub
