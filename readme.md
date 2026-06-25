@@ -6,5 +6,5 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/crimiv/applehub/main/
 
 ## Testing
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/crimiv/applehub/main/test/main.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/crimiv/applehub/main/testing/main.lua"))()
 ```
