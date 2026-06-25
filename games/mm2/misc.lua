@@ -94,20 +94,11 @@ MiscTab:Button({
 local function SendChatMessage(message)
     local success, result = pcall(function()
         local TextChatService = game:GetService("TextChatService")
-        local generalChatChannel = TextChatService:FindFirstChild("TextChannels") and TextChatService.TextChannels:FindFirstChild("RBXGeneral")
-        if generalChatChannel then
-            generalChatChannel:SendAsync(message)
-            return true
-        else
-            local SayMessageRequest = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents") and game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents:FindFirstChild("SayMessageRequest")
-            if SayMessageRequest and SayMessageRequest:IsA("RemoteEvent") then
-                SayMessageRequest:FireServer(message, "All")
-                return true
-            end
-        end
-        return false
+        local generalChatChannel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+        generalChatChannel:SendAsync(message)
+        return true
     end)
-    if not success or not result then
+    if not success then
         WindUI:Notify({ Title = "Error", Content = "Failed to send chat message", Duration = 2 })
     end
 end
