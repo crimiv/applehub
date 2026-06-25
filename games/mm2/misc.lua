@@ -92,11 +92,23 @@ MiscTab:Button({
 })
 
 local function SendChatMessage(message)
-    local SayMessageRequest = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents") and game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents:FindFirstChild("SayMessageRequest")
-    if SayMessageRequest and SayMessageRequest:IsA("RemoteEvent") then
-        SayMessageRequest:FireServer(message, "All")
-    else
-        WindUI:Notify({ Title = "Error", Content = "Chat remote not found", Duration = 2 })
+    local success, result = pcall(function()
+        local TextChatService = game:GetService("TextChatService")
+        local generalChatChannel = TextChatService:FindFirstChild("TextChannels") and TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+        if generalChatChannel then
+            generalChatChannel:SendAsync(message)
+            return true
+        else
+            local SayMessageRequest = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents") and game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents:FindFirstChild("SayMessageRequest")
+            if SayMessageRequest and SayMessageRequest:IsA("RemoteEvent") then
+                SayMessageRequest:FireServer(message, "All")
+                return true
+            end
+        end
+        return false
+    end)
+    if not success or not result then
+        WindUI:Notify({ Title = "Error", Content = "Failed to send chat message", Duration = 2 })
     end
 end
 
