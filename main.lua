@@ -1,13 +1,17 @@
 --!strict
 
 local HttpGet = game.HttpGet
-local GameId: number = game.GameId
+local GameId = game.GameId
+
+local BaseURL = "https://raw.githubusercontent.com/crimiv/silverhub/refs/heads/main/"
 
 local Games: {[number]: string} = loadstring(
-  HttpGet(game, "https://raw.githubusercontent.com/crimiv/silverhub/refs/heads/main/GameList.lua")
-)() :: any
+    HttpGet(game, BaseURL .. "GameList.lua")
+)()
 
-local URL: string? = Games[GameId]
-if not URL then return end
+local Script = Games[GameId]
+if not Script then
+    return
+end
 
-loadstring(HttpGet(game, URL))()
+loadstring(HttpGet(game, BaseURL .. Script:gsub(" ", "%%20")))()
