@@ -1,53 +1,54 @@
 local WindUI = AppleHub.WindUI
+local utils = AppleHub.Utils
 
 local TeleportTab = AppleHub.Window:Tab({ Title = "Teleport" })
 
 local function TeleportToLobby()
     local localPlayer = game.Players.LocalPlayer
     if not localPlayer then
-        WindUI:Notify({ Title = "Error", Content = "Local player not found", Duration = 2 })
+        utils.Notify({ Title = "Error", Content = "Local player not found", Duration = 2 })
         return
     end
     local character = localPlayer.Character
     if not character then
-        WindUI:Notify({ Title = "Error", Content = "Character not found", Duration = 2 })
+        utils.Notify({ Title = "Error", Content = "Character not found", Duration = 2 })
         return
     end
     local rootPart = character:FindFirstChild("HumanoidRootPart")
     if not rootPart then
-        WindUI:Notify({ Title = "Error", Content = "HumanoidRootPart not found", Duration = 2 })
+        utils.Notify({ Title = "Error", Content = "HumanoidRootPart not found", Duration = 2 })
         return
     end
     local lobby = workspace:FindFirstChild("RegularLobby")
     if not lobby then
-        WindUI:Notify({ Title = "Error", Content = "RegularLobby not found", Duration = 2 })
+        utils.Notify({ Title = "Error", Content = "RegularLobby not found", Duration = 2 })
         return
     end
     local parts = lobby:GetDescendants()
     for _, part in ipairs(parts) do
         if part:IsA("BasePart") then
             rootPart.CFrame = part.CFrame
-            WindUI:Notify({ Title = "Teleport", Content = "Teleported to lobby", Duration = 2 })
+            utils.Notify({ Title = "Teleport", Content = "Teleported to lobby", Duration = 2 })
             return
         end
     end
-    WindUI:Notify({ Title = "Error", Content = "No BasePart found in lobby", Duration = 2 })
+    utils.Notify({ Title = "Error", Content = "No BasePart found in lobby", Duration = 2 })
 end
 
 local function TeleportToCurrentMap()
     local localPlayer = game.Players.LocalPlayer
     if not localPlayer then
-        WindUI:Notify({ Title = "Error", Content = "Local player not found", Duration = 2 })
+        utils.Notify({ Title = "Error", Content = "Local player not found", Duration = 2 })
         return
     end
     local character = localPlayer.Character
     if not character then
-        WindUI:Notify({ Title = "Error", Content = "Character not found", Duration = 2 })
+        utils.Notify({ Title = "Error", Content = "Character not found", Duration = 2 })
         return
     end
     local rootPart = character:FindFirstChild("HumanoidRootPart")
     if not rootPart then
-        WindUI:Notify({ Title = "Error", Content = "HumanoidRootPart not found", Duration = 2 })
+        utils.Notify({ Title = "Error", Content = "HumanoidRootPart not found", Duration = 2 })
         return
     end
     local currentMapContainer = nil
@@ -76,7 +77,7 @@ local function TeleportToCurrentMap()
         end
     end
     if not currentMapContainer then
-        WindUI:Notify({ Title = "Error", Content = "Could not find current map", Duration = 2 })
+        utils.Notify({ Title = "Error", Content = "Could not find current map", Duration = 2 })
         return
     end
     local targetPart = nil
@@ -101,11 +102,11 @@ local function TeleportToCurrentMap()
         end
     end
     if not targetPart then
-        WindUI:Notify({ Title = "Error", Content = "No BasePart found in map", Duration = 2 })
+        utils.Notify({ Title = "Error", Content = "No BasePart found in map", Duration = 2 })
         return
     end
     rootPart.CFrame = targetPart.CFrame
-    WindUI:Notify({ Title = "Teleport", Content = "Teleported to current map", Duration = 2 })
+    utils.Notify({ Title = "Teleport", Content = "Teleported to current map", Duration = 2 })
 end
 
 TeleportTab:Button({
