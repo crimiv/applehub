@@ -7,10 +7,16 @@ end)()
 
 local originalNotify = WindUI.Notify
 WindUI.Notify = function(params)
-    if type(params) == "table" and params.Icon then
-        params.Icon = nil
+    if type(params) == "table" then
+        local title = params.Title or ""
+        local content = params.Content or params.Text or ""
+        local duration = params.Duration or 3
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = title,
+            Text = content,
+            Duration = duration,
+        })
     end
-    return originalNotify(params)
 end
 
 local function DefineTheme(name, colors)
