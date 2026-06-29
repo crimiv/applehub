@@ -115,7 +115,7 @@ end
 MiscTab:Button({
     Title = "Load Simple Spy",
     Callback = function()
-        LoadSimpleSpy("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpyBeta.lua")
+        LoadSimpleSpy("https://raw.githubusercontent.com/ltseverydayyou/uuuuuuu/refs/heads/main/SimpleSpyRework.luau")
     end
 })
 
@@ -142,34 +142,6 @@ MiscTab:Button({
     Title = "Load Cobalt",
     Callback = function()
         LoadCobalt("https://github.com/notpoiu/cobalt/releases/latest/download/Cobalt.luau")
-    end
-})
-
-
-local function LoadSeluwia(url)
-    local success, result = pcall(function()
-        return loadstring(game:HttpGetAsync(url))()
-    end)
-    if not success then
-        WindUI:Notify({
-            Title = "Error",
-            Content = "Failed to load Seluwia. Check your connection.",
-            Duration = 4,
-        })
-    else
-        WindUI:Notify({
-            Title = "Seluwia Loaded",
-            Content = "Seluwia opened successfully.",
-            Duration = 3,
-        })
-    end
-end
-
-
-MiscTab:Button({
-    Title = "Load Seluwia",
-    Callback = function()
-        LoadSeluwia("https://raw.githubusercontent.com/crimiv/linuxhub/main/games/universal/seluwia.lua")
     end
 })
 
