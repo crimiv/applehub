@@ -80,14 +80,14 @@ local function LoadDex(url)
     else
         WindUI:Notify({
             Title = "Dex Loaded",
-            Content = "Dex Explorer loaded successfully.",
+            Content = "Dex loaded successfully.",
             Duration = 3,
         })
     end
 end
 
 MiscTab:Button({
-    Title = "Load Dex Explorer",
+    Title = "Load Dex",
     Callback = function()
         LoadDex("https://raw.githubusercontent.com/ltseverydayyou/uuuuuuu/refs/heads/main/DexByMoonMobile")
     end
@@ -116,6 +116,32 @@ MiscTab:Button({
     Title = "Load Simple Spy",
     Callback = function()
         LoadSimpleSpy("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpyBeta.lua")
+    end
+})
+
+local function LoadCobalt(url)
+    local success, result = pcall(function()
+        return loadstring(game:HttpGetAsync(url))()
+    end)
+    if not success then
+        WindUI:Notify({
+            Title = "Error",
+            Content = "Failed to load Cobalt. Check your connection.",
+            Duration = 4,
+        })
+    else
+        WindUI:Notify({
+            Title = "Cobalt Loaded",
+            Content = "Cobalt loaded successfully.",
+            Duration = 3,
+        })
+    end
+end
+
+MiscTab:Button({
+    Title = "Load Cobalt",
+    Callback = function()
+        LoadCobalt("https://github.com/notpoiu/cobalt/releases/latest/download/Cobalt.luau")
     end
 })
 
