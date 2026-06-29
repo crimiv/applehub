@@ -93,6 +93,32 @@ MiscTab:Button({
     end
 })
 
+local function LoadSimpleSpy(url)
+    local success, result = pcall(function()
+        return loadstring(game:HttpGetAsync(url))()
+    end)
+    if not success then
+        WindUI:Notify({
+            Title = "Error",
+            Content = "Failed to load Simple Spy. Check your connection.",
+            Duration = 4,
+        })
+    else
+        WindUI:Notify({
+            Title = "Simple Spy Loaded",
+            Content = "Simple Spy loaded successfully.",
+            Duration = 3,
+        })
+    end
+end
+
+MiscTab:Button({
+    Title = "Load Simple Spy",
+    Callback = function()
+        LoadSimpleSpy("https://raw.githubusercontent.com/78n/SimpleSpy/main/SimpleSpyBeta.lua")
+    end
+})
+
 LinuxHub.DisableAll = function()
     antiFlingEnabled = false
     LinuxHub.Toggles.antiFlingEnabled = false
