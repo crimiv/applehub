@@ -9,11 +9,6 @@ local config = LinuxHub.Config
 
 local FarmTab = LinuxHub.Window:Tab({ Title = "Auto Farm" })
 
-local scene = Workspace:FindFirstChild("Scene")
-local beach = scene and scene:FindFirstChild("Beach")
-local beachballs = beach and beach:FindFirstChild("Beachballs")
-local goalsFolder = beach and beach:FindFirstChild("Goals")
-
 local function getPosition(obj)
     if not obj then return nil end
     if obj:IsA("BasePart") then return obj.Position end
@@ -32,29 +27,26 @@ local childAddedConn = nil
 local isRunning = false
 
 local function refreshPairs()
-    local balls = {}
-    local goals = {}
+    local scene = Workspace:FindFirstChild("Scene")
+    local beach = scene and scene:FindFirstChild("Beach")
+    local beachballs = beach and beach:FindFirstChild("Beachballs")
+    local goalsFolder = beach and beach:FindFirstChild("Goals")
+    local balls, goals = {}, {}
     if beachballs then
         for _, child in ipairs(beachballs:GetChildren()) do
-            if string.find(string.lower(child.Name), "ball") then
-                table.insert(balls, child)
-            end
+            if string.find(string.lower(child.Name), "ball") then table.insert(balls, child) end
         end
     end
     if goalsFolder then
         for _, child in ipairs(goalsFolder:GetChildren()) do
-            if string.find(string.lower(child.Name), "goal") then
-                table.insert(goals, child)
-            end
+            if string.find(string.lower(child.Name), "goal") then table.insert(goals, child) end
         end
     end
-    table.sort(balls, function(a, b) return a.Name < b.Name end)
-    table.sort(goals, function(a, b) return a.Name < b.Name end)
+    table.sort(balls, function(a,b) return a.Name < b.Name end)
+    table.sort(goals, function(a,b) return a.Name < b.Name end)
     local pairs = {}
     local count = math.min(#balls, #goals)
-    for i = 1, count do
-        table.insert(pairs, { ball = balls[i], goal = goals[i] })
-    end
+    for i=1,count do table.insert(pairs, { ball=balls[i], goal=goals[i] }) end
     return pairs
 end
 
@@ -87,9 +79,7 @@ local function RideAndScore(ball, goalPos)
             tweenBall.Completed:Wait()
         else
             for _, part in ipairs(ball:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CFrame = CFrame.new(goalPos)
-                end
+                if part:IsA("BasePart") then part.CFrame = CFrame.new(goalPos) end
             end
             local tweenPlayer = TweenService:Create(rootPart, tweenInfo2, { CFrame = CFrame.new(goalPos) })
             tweenPlayer:Play()
@@ -100,26 +90,19 @@ local function RideAndScore(ball, goalPos)
 end
 
 local function ScoreAll()
-    local pairs = refreshPairs()
-    for _, pair in ipairs(pairs) do
+    for _, pair in ipairs(refreshPairs()) do
         if pair.ball and pair.goal then
             local goalPos = getPosition(pair.goal)
-            if goalPos then
-                RideAndScore(pair.ball, goalPos)
-            end
+            if goalPos then RideAndScore(pair.ball, goalPos) end
         end
     end
 end
 
 local function ScoreBallByObject(ball)
-    local pairs = refreshPairs()
-    for _, pair in ipairs(pairs) do
+    for _, pair in ipairs(refreshPairs()) do
         if pair.ball == ball then
             local goalPos = getPosition(pair.goal)
-            if goalPos then
-                task.wait(0.3)
-                RideAndScore(ball, goalPos)
-            end
+            if goalPos then task.wait(0.3); RideAndScore(ball, goalPos) end
             break
         end
     end
@@ -138,6 +121,7 @@ local function startAutoFarm()
             task.wait(1)
         end
     end)
+    local beachballs = Workspace:FindFirstChild("Scene") and Workspace.Scene:FindFirstChild("Beach") and Workspace.Scene.Beach:FindFirstChild("Beachballs")
     if beachballs then
         childAddedConn = beachballs.ChildAdded:Connect(function(child)
             if isRunning and string.find(string.lower(child.Name), "ball") then
@@ -145,7 +129,7 @@ local function startAutoFarm()
             end
         end)
     end
-    WindUI:Notify({ Title = "Auto Farm", Content = "Enabled", Duration = 2 })
+    pcall(WindUI.Notify, WindUI, { Title = "Auto Farm", Content = "Enabled", Duration = 2 })
 end
 
 local function stopAutoFarm()
@@ -155,24 +139,29 @@ local function stopAutoFarm()
     if loopTask then task.cancel(loopTask); loopTask = nil end
     if childAddedConn then childAddedConn:Disconnect(); childAddedConn = nil end
     if LinuxHub.SaveSettings then LinuxHub.SaveSettings() end
-    WindUI:Notify({ Title = "Auto Farm", Content = "Disabled", Duration = 2 })
+    pcall(WindUI.Notify, WindUI, { Title = "Auto Farm", Content = "Disabled", Duration = 2 })
 end
 
-FarmTab:Toggle({
-    Title = "Auto Score Balls",
-    Value = autoFarmEnabled,
-    Callback = function(state)
-        if state then startAutoFarm() else stopAutoFarm() end
-    end
-})
+pcall(function()
+    FarmTab:Toggle({
+        Title = "Auto Score Balls",
+        Value = autoFarmEnabled,
+        Callback = function(state)
+            if state then startAutoFarm() else stopAutoFarm() end
+        end
+    })
+end)
 
-local freezeDemonKingEnabled = LinuxHub.Toggles.freezeDemonKingEnabled or false
-local demonKingHeartbeatConn = nil
-local isFrozen = false
+local orbitEnabled = LinuxHub.Toggles.orbitEnabled or false
+local orbitHeartbeatConn = nil
+local isOrbiting = false
+local orbitAngle = 0
+local orbitRadius = 8
+local orbitSpeed = 2.0
 local originalWalkSpeed = 16
 local originalJumpPower = 50
 
-local function getDemonKingCFrame()
+local function getDemonKingPosition()
     local npc = Workspace:FindFirstChild("NPC")
     if not npc then return nil end
     local demonKing = npc:FindFirstChild("DemonKing")
@@ -180,33 +169,38 @@ local function getDemonKingCFrame()
     local demonKingModel = demonKing:FindFirstChild("DemonKing")
     if demonKingModel then
         local pos = getPosition(demonKingModel)
-        if pos then return CFrame.new(pos) end
+        if pos then return pos end
     end
-    local pos = getPosition(demonKing)
-    if pos then return CFrame.new(pos) end
-    return nil
+    return getPosition(demonKing)
 end
 
-local function freezePlayerInsideDemonKing()
+local function orbitPlayer(deltaTime)
     local character = LocalPlayer.Character
     if not character then return end
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local rootPart = character:FindFirstChild("HumanoidRootPart")
     if not humanoid or not rootPart then return end
 
-    local targetCFrame = getDemonKingCFrame()
-    if not targetCFrame then return end
+    local centerPos = getDemonKingPosition()
+    if not centerPos then return end
 
-    rootPart.CFrame = targetCFrame
+    orbitAngle = orbitAngle + orbitSpeed * deltaTime
+
+    local offsetX = math.cos(orbitAngle) * orbitRadius
+    local offsetZ = math.sin(orbitAngle) * orbitRadius
+    local newPos = centerPos + Vector3.new(offsetX, 0, offsetZ)
+
+    rootPart.CFrame = CFrame.new(newPos)
+
     humanoid.WalkSpeed = 0
     humanoid.JumpPower = 0
 end
 
-local function startFreezeDemonKing()
-    if isFrozen then return end
-    isFrozen = true
-    freezeDemonKingEnabled = true
-    LinuxHub.Toggles.freezeDemonKingEnabled = true
+local function startOrbit()
+    if isOrbiting then return end
+    isOrbiting = true
+    orbitEnabled = true
+    LinuxHub.Toggles.orbitEnabled = true
 
     local character = LocalPlayer.Character
     if character then
@@ -217,24 +211,26 @@ local function startFreezeDemonKing()
         end
     end
 
-    demonKingHeartbeatConn = RunService.Heartbeat:Connect(function()
-        if isFrozen then
-            pcall(freezePlayerInsideDemonKing)
+    orbitAngle = 0
+
+    orbitHeartbeatConn = RunService.Heartbeat:Connect(function(deltaTime)
+        if isOrbiting then
+            pcall(orbitPlayer, deltaTime)
         end
     end)
 
     if LinuxHub.SaveSettings then LinuxHub.SaveSettings() end
-    WindUI:Notify({ Title = "Freeze inside Demon King", Content = "Enabled", Duration = 2 })
+    pcall(WindUI.Notify, WindUI, { Title = "Orbit around Demon King", Content = "Enabled", Duration = 2 })
 end
 
-local function stopFreezeDemonKing()
-    isFrozen = false
-    freezeDemonKingEnabled = false
-    LinuxHub.Toggles.freezeDemonKingEnabled = false
+local function stopOrbit()
+    isOrbiting = false
+    orbitEnabled = false
+    LinuxHub.Toggles.orbitEnabled = false
 
-    if demonKingHeartbeatConn then
-        demonKingHeartbeatConn:Disconnect()
-        demonKingHeartbeatConn = nil
+    if orbitHeartbeatConn then
+        orbitHeartbeatConn:Disconnect()
+        orbitHeartbeatConn = nil
     end
 
     local character = LocalPlayer.Character
@@ -247,21 +243,23 @@ local function stopFreezeDemonKing()
     end
 
     if LinuxHub.SaveSettings then LinuxHub.SaveSettings() end
-    WindUI:Notify({ Title = "Freeze inside Demon King", Content = "Disabled", Duration = 2 })
+    pcall(WindUI.Notify, WindUI, { Title = "Orbit around Demon King", Content = "Disabled", Duration = 2 })
 end
 
-FarmTab:Toggle({
-    Title = "Freeze inside Demon King",
-    Value = freezeDemonKingEnabled,
-    Callback = function(state)
-        if state then startFreezeDemonKing() else stopFreezeDemonKing() end
-    end
-})
+pcall(function()
+    FarmTab:Toggle({
+        Title = "Orbit around Demon King",
+        Value = orbitEnabled,
+        Callback = function(state)
+            if state then startOrbit() else stopOrbit() end
+        end
+    })
+end)
 
 LinuxHub.DisableAll = LinuxHub.DisableAll or function() end
 local oldDisable = LinuxHub.DisableAll
 LinuxHub.DisableAll = function()
     stopAutoFarm()
-    stopFreezeDemonKing()
+    stopOrbit()
     oldDisable()
 end
