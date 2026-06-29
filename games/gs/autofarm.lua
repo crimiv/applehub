@@ -9,7 +9,6 @@ local config = LinuxHub.Config
 
 local FarmTab = LinuxHub.Window:Tab({ Title = "Auto Farm" })
 
--- Helper: get position of any object
 local function getPosition(obj)
     if not obj then return nil end
     if obj:IsA("BasePart") then return obj.Position end
@@ -22,9 +21,6 @@ local function getPosition(obj)
     return nil
 end
 
--- ============================================================
--- AUTO SCORE BALLS (unchanged)
--- ============================================================
 local autoFarmEnabled = LinuxHub.Toggles.autoFarmEnabled or false
 local loopTask = nil
 local childAddedConn = nil
@@ -156,15 +152,12 @@ pcall(function()
     })
 end)
 
--- ============================================================
--- ORBIT AROUND DEMON KING (with facing)
--- ============================================================
 local orbitEnabled = LinuxHub.Toggles.orbitEnabled or false
 local orbitHeartbeatConn = nil
 local isOrbiting = false
 local orbitAngle = 0
-local orbitRadius = 8          -- adjust as needed
-local orbitSpeed = 2.0         -- radians per second
+local orbitRadius = 8
+local orbitSpeed = 2.0
 local originalWalkSpeed = 16
 local originalJumpPower = 50
 
@@ -173,13 +166,11 @@ local function getDemonKingPosition()
     if not npc then return nil end
     local demonKing = npc:FindFirstChild("DemonKing")
     if not demonKing then return nil end
-    -- Try the inner model first: workspace.NPC.DemonKing.DemonKing
     local demonKingModel = demonKing:FindFirstChild("DemonKing")
     if demonKingModel then
         local pos = getPosition(demonKingModel)
         if pos then return pos end
     end
-    -- Fallback to the parent DemonKing itself
     return getPosition(demonKing)
 end
 
@@ -193,18 +184,14 @@ local function orbitPlayer(deltaTime)
     local centerPos = getDemonKingPosition()
     if not centerPos then return end
 
-    -- Update angle
     orbitAngle = orbitAngle + orbitSpeed * deltaTime
 
-    -- Calculate new position on circle (XZ plane, Y stays same as center)
     local offsetX = math.cos(orbitAngle) * orbitRadius
     local offsetZ = math.sin(orbitAngle) * orbitRadius
     local newPos = centerPos + Vector3.new(offsetX, 0, offsetZ)
 
-    -- Set CFrame: position AND look at the Demon King
     rootPart.CFrame = CFrame.new(newPos, centerPos)
 
-    -- Disable movement
     humanoid.WalkSpeed = 0
     humanoid.JumpPower = 0
 end
@@ -215,7 +202,6 @@ local function startOrbit()
     orbitEnabled = true
     LinuxHub.Toggles.orbitEnabled = true
 
-    -- Save original movement values
     local character = LocalPlayer.Character
     if character then
         local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -225,7 +211,7 @@ local function startOrbit()
         end
     end
 
-    orbitAngle = 0  -- reset angle on start
+    orbitAngle = 0
 
     orbitHeartbeatConn = RunService.Heartbeat:Connect(function(deltaTime)
         if isOrbiting then
@@ -247,7 +233,6 @@ local function stopOrbit()
         orbitHeartbeatConn = nil
     end
 
-    -- Restore movement
     local character = LocalPlayer.Character
     if character then
         local humanoid = character:FindFirstChildOfClass("Humanoid")
@@ -271,9 +256,6 @@ pcall(function()
     })
 end)
 
--- ============================================================
--- Disable all on hub close
--- ============================================================
 LinuxHub.DisableAll = LinuxHub.DisableAll or function() end
 local oldDisable = LinuxHub.DisableAll
 LinuxHub.DisableAll = function()
