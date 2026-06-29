@@ -97,6 +97,7 @@ if LinuxHub.CreateStatusTab then
 end
 
 LoadScript("games/gs/combat.lua")
+LoadScript("games/gs/autofarm.lua")
 
 if _G.LINUXHUB_STATES then
     for key, value in pairs(_G.LINUXHUB_STATES) do
