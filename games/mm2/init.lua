@@ -102,6 +102,8 @@ LoadScript("games/mm2/troll.lua")
 LoadScript("games/mm2/misc.lua")
 LoadScript("games/mm2/teleport.lua")
 LoadScript("games/mm2/settings.lua")
+LoadScript("games/universal/admin.lua")
+LoadScript("games/universal/misc.lua")
 
 if _G.LINUXHUB_STATES then
     for key, value in pairs(_G.LINUXHUB_STATES) do
