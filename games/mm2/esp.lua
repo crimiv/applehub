@@ -29,7 +29,7 @@ local function ClearESP()
 end
 
 local function UpdateESP()
-    if _G.LINUXHUB_UPDATING then
+    if _G.BANDITHUB_UPDATING then
         ClearESP()
         return
     end
@@ -80,36 +80,36 @@ local setSheriffRemote = extras and extras:FindFirstChild("SetSheriff")
 
 if setMurdererRemote and setMurdererRemote:IsA("RemoteEvent") then
     setMurdererRemote.OnClientEvent:Connect(function(...)
-        if _G.LINUXHUB_UPDATING then return end
+        if _G.BANDITHUB_UPDATING then return end
     end)
 end
 
 if setSheriffRemote and setSheriffRemote:IsA("RemoteEvent") then
     setSheriffRemote.OnClientEvent:Connect(function(...)
-        if _G.LINUXHUB_UPDATING then return end
+        if _G.BANDITHUB_UPDATING then return end
     end)
 end
 
 local roundTimer = workspace:FindFirstChild("RoundTimerPart")
 if roundTimer then
     roundTimer:GetAttributeChangedSignal("Time"):Connect(function()
-        if _G.LINUXHUB_UPDATING then return end
+        if _G.BANDITHUB_UPDATING then return end
     end)
 end
 
 if espEnabled then UpdateESP() end
 
 game.Players.PlayerAdded:Connect(function(player)
-    if _G.LINUXHUB_UPDATING then return end
+    if _G.BANDITHUB_UPDATING then return end
     player.CharacterAdded:Connect(function()
-        if _G.LINUXHUB_UPDATING then return end
+        if _G.BANDITHUB_UPDATING then return end
         task.wait(0.5)
         UpdateESP()
     end)
 end)
 
 game.Players.PlayerRemoving:Connect(function(player)
-    if _G.LINUXHUB_UPDATING then return end
+    if _G.BANDITHUB_UPDATING then return end
     if highlightInstances[player] then
         highlightInstances[player]:Destroy()
         highlightInstances[player] = nil
@@ -117,7 +117,7 @@ game.Players.PlayerRemoving:Connect(function(player)
 end)
 
 game:GetService("RunService").Heartbeat:Connect(function()
-    if _G.LINUXHUB_UPDATING then return end
+    if _G.BANDITHUB_UPDATING then return end
     if espEnabled then
         local now = tick()
         if now - espUpdateCooldown >= 0.3 then

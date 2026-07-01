@@ -69,7 +69,7 @@ end
 
 LoadSettings()
 
-local version = LINUXHUB_VERSION or "1.0.0"
+local version = BANDITHUB_VERSION or "1.0.0"
 
 local Window = WindUI:CreateWindow({
     Title = "Linux Hub v" .. version,
@@ -99,11 +99,11 @@ end
 LoadScript("games/gs/combat.lua")
 LoadScript("games/gs/autofarm.lua")
 
-if _G.LINUXHUB_STATES then
-    for key, value in pairs(_G.LINUXHUB_STATES) do
+if _G.BANDITHUB_STATES then
+    for key, value in pairs(_G.BANDITHUB_STATES) do
         BanditHub.Toggles[key] = value
     end
-    _G.LINUXHUB_STATES = nil
+    _G.BANDITHUB_STATES = nil
 end
 
 if BanditHub.RestoreStates then
