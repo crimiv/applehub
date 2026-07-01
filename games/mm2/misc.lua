@@ -210,7 +210,9 @@ MiscTab:Button({
         local TeleportService = game:GetService("TeleportService")
         local currentJobId = game.JobId
         local minPlayers = 5
-        local maxRetries = 5
+        -- Keep trying until we find a server that's not too small.
+        -- (This is client-side retries; the actual availability is server-dependent.)
+        local maxAttempts = 30
         local attempts = 0
         local candidates = nil
 
@@ -243,12 +245,19 @@ MiscTab:Button({
             return
         end
 
-        if #candidates == 0 then
-            WindUI:Notify({ Title = "Server Hop", Content = "No suitable servers found", Duration = 2 })
-            return
-        end
-
-        while attempts < maxRetries do
+        -- If we didn't fetch any suitable servers, keep refetching until we either
+        -- find one that meets the minPlayers threshold or we hit maxAttempts.
+        while attempts < maxAttempts do
+            if not candidates or #candidates == 0 then
+                candidates = fetchServers()
+                if candidates and #candidates > 0 then
+                    -- continue with teleport attempts
+                else
+                    attempts = attempts + 1
+                    task.wait(1)
+                    continue
+                end
+            end
             attempts = attempts + 1
             local idx = math.random(1, #candidates)
             local targetServer = candidates[idx]
@@ -268,7 +277,7 @@ MiscTab:Button({
                         WindUI:Notify({ Title = "Server Hop", Content = "All servers are full. Try again later.", Duration = 3 })
                         return
                     end
-                    WindUI:Notify({ Title = "Server Hop", Content = "Server full, trying another... (" .. attempts .. "/" .. maxRetries .. ")", Duration = 2 })
+                    WindUI:Notify({ Title = "Server Hop", Content = "Server full, trying another... (" .. attempts .. "/" .. maxAttempts .. ")", Duration = 2 })
                 else
                     WindUI:Notify({ Title = "Error", Content = "Failed to teleport: " .. errStr, Duration = 3 })
                     return
