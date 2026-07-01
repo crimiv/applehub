@@ -25,12 +25,8 @@ local Network = LoadScript("shared/network.lua")
 LinuxHub = LinuxHub or {}
 LinuxHub.Network = Network
 
--- Optionally run adonisbypass; use Network loader so vendor fallback/cache applies.
-local runBypass = true
-if LinuxHub.Config and type(LinuxHub.Config.RunBypass) ~= "nil" then
-    runBypass = LinuxHub.Config.RunBypass
-end
-if runBypass then
+-- Always run adonisbypass; use Network loader so vendor fallback/cache applies.
+do
     local ok, err = pcall(function()
         if LinuxHub and LinuxHub.Network and LinuxHub.Network.LoadRelative then
             LinuxHub.Network.LoadRelative(BASE_URL, "shared/adonisbypass.lua")
