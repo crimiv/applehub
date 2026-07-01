@@ -90,7 +90,6 @@ Window:SetToggleKey(Enum.KeyCode.K)
 LinuxHub.Window = Window
 LinuxHub.SaveSettings = SaveSettings
 LinuxHub.LoadSettings = LoadSettings
-LinuxHub.UniversalTab = Window:Tab({ Title = "Universal" })
 
 if LinuxHub.CreateStatusTab then
     LinuxHub.CreateStatusTab(Window)
