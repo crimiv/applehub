@@ -20,7 +20,7 @@ local camera = Workspace.CurrentCamera
 local targetPosition = nil
 
 local function updateTarget()
-    if _G.LINUXHUB_UPDATING then
+    if _G.BANDITHUB_UPDATING then
         targetPosition = nil
         return
     end
@@ -78,7 +78,7 @@ local function updateTarget()
 end
 
 local oldNamecall = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
-    if _G.LINUXHUB_UPDATING then return oldNamecall(self, ...) end
+    if _G.BANDITHUB_UPDATING then return oldNamecall(self, ...) end
     local method = getnamecallmethod()
     if Config.Enabled and targetPosition and self == Workspace and method == "Raycast" then
         local args = { ... }
