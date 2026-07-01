@@ -1,6 +1,6 @@
 local WindUI = LinuxHub.WindUI
 
-local MiscTab = LinuxHub.Window:Tab({ Title = "Misc" })
+local MiscTab = LinuxHub.UniversalTab or LinuxHub.Window:Tab({ Title = "Misc" })
 
 local antiFlingEnabled = LinuxHub.Toggles.antiFlingEnabled or false
 local antiFlingHeartbeat = nil
