@@ -5,7 +5,11 @@ local AdminTab = LinuxHub.Window:Tab({ Title = "Admin" })
 
 local function LoadAdmin(url)
     local success, result = pcall(function()
-        return loadstring(game:HttpGet(url))()
+        if LinuxHub and LinuxHub.Network and LinuxHub.Network.Load then
+            return LinuxHub.Network.Load(url)
+        else
+            return loadstring(game:HttpGet(url))()
+        end
     end)
     if not success then
         WindUI:Notify({
@@ -106,7 +110,11 @@ MiscTab:Toggle({
 
 local function LoadDex(url)
     local success, result = pcall(function()
-        return loadstring(game:HttpGet(url))()
+        if LinuxHub and LinuxHub.Network and LinuxHub.Network.Load then
+            return LinuxHub.Network.Load(url)
+        else
+            return loadstring(game:HttpGet(url))()
+        end
     end)
     if not success then
         WindUI:Notify({
@@ -132,7 +140,11 @@ MiscTab:Button({
 
 local function LoadSimpleSpy(url)
     local success, result = pcall(function()
-        return loadstring(game:HttpGetAsync(url))()
+        if LinuxHub and LinuxHub.Network and LinuxHub.Network.Load then
+            return LinuxHub.Network.Load(url)
+        else
+            return loadstring(game:HttpGetAsync(url))()
+        end
     end)
     if not success then
         WindUI:Notify({
@@ -158,7 +170,11 @@ MiscTab:Button({
 
 local function LoadCobalt(url)
     local success, result = pcall(function()
-        return loadstring(game:HttpGetAsync(url))()
+        if LinuxHub and LinuxHub.Network and LinuxHub.Network.Load then
+            return LinuxHub.Network.Load(url)
+        else
+            return loadstring(game:HttpGetAsync(url))()
+        end
     end)
     if not success then
         WindUI:Notify({
