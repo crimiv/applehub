@@ -25,13 +25,27 @@ local Network = LoadScript("shared/network.lua")
 LinuxHub = LinuxHub or {}
 LinuxHub.Network = Network
 
-local bypassScript = Fetch(BASE_URL .. "shared/adonisbypass.lua")
-local bypassFn, bypassErr = loadstring(bypassScript)
-if not bypassFn then
-    error("Failed to compile bypass script: " .. tostring(bypassErr))
+-- Optionally run adonisbypass; use Network loader so vendor fallback/cache applies.
+local runBypass = true
+if LinuxHub.Config and type(LinuxHub.Config.RunBypass) ~= "nil" then
+    runBypass = LinuxHub.Config.RunBypass
 end
-if bypassFn then
-    bypassFn()
+if runBypass then
+    local ok, err = pcall(function()
+        if LinuxHub and LinuxHub.Network and LinuxHub.Network.LoadRelative then
+            LinuxHub.Network.LoadRelative(BASE_URL, "shared/adonisbypass.lua")
+        else
+            local bypassScript = Fetch(BASE_URL .. "shared/adonisbypass.lua")
+            local bypassFn, bypassErr = loadstring(bypassScript)
+            if not bypassFn then
+                error("Failed to compile bypass script: " .. tostring(bypassErr))
+            end
+            bypassFn()
+        end
+    end)
+    if not ok then
+        warn("Adonis bypass load failed: " .. tostring(err))
+    end
 end
 
 local version = "1.0.0"

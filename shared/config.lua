@@ -12,4 +12,7 @@ return {
     themes = {
         "Linux",
     },
+    -- Whether to attempt running the adonisbypass script at startup.
+    -- Set to false to disable automatic bypass execution.
+    RunBypass = true,
 }
