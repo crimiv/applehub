@@ -3,7 +3,7 @@
 --   _G.BANDITHUB_UI = "windui" | "rayfield" (default windui)
 --   loadstring(game:HttpGet("<this loader url>"))()
 
-local BASE_URL = "https://raw.githubusercontent.com/crimiv/bandithub/main/"
+local BASE_URL = "https://raw.githubusercontent.com/crimiv/bandithub/test/"
 
 local function Fetch(url)
     return game:HttpGet(url)
