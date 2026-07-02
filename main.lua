@@ -2,7 +2,7 @@ local function Fetch(url)
     return game:HttpGet(url)
 end
 
-local BASE_URL = "https://raw.githubusercontent.com/crimiv/bandithub/main/"
+local BASE_URL = "https://raw.githubusercontent.com/crimiv/bandithub/test/"
 
 local function LoadScript(name)
     local script = Fetch(BASE_URL .. name)
