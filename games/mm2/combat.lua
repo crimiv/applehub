@@ -1,10 +1,11 @@
 local WindUI = BanditHub.WindUI
 local utils = BanditHub.Utils
-local config = BanditHub.Config
 
 local CombatTab = BanditHub.Window:Tab({ Title = "Combat" })
 
+
 local roundTimer = workspace:FindFirstChild("RoundTimerPart")
+
 
 local function IsPlayerAlive()
     local localPlayer = game.Players.LocalPlayer
@@ -35,7 +36,8 @@ local function IsInLobby()
 end
 
 local autoShootEnabled = BanditHub.Toggles.autoShootEnabled or false
-local AUTO_SHOOT_COOLDOWN = config.cooldowns.autoShoot
+local AUTO_SHOOT_COOLDOWN = 0.3
+
 local lastAutoShootTime = 0
 
 local function ShootAtMurderer(silent)
@@ -267,7 +269,8 @@ CombatTab:Button({
 })
 
 local autoKillAllEnabled = BanditHub.Toggles.autoKillAllEnabled or false
-local AUTO_KILL_ALL_COOLDOWN = config.cooldowns.autoKillAll
+local AUTO_KILL_ALL_COOLDOWN = 1
+
 local lastAutoKillAllTime = 0
 
 local function KillAll()

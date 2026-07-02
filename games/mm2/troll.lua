@@ -1,8 +1,8 @@
 local WindUI = BanditHub.WindUI
 local utils = BanditHub.Utils
-local config = BanditHub.Config
 
 local TrollTab = BanditHub.Window:Tab({ Title = "Troll" })
+
 
 local function IsSeated(player)
     local char = player.Character

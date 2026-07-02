@@ -1,8 +1,7 @@
 local WindUI = BanditHub.WindUI
 local utils = BanditHub.Utils
-local config = BanditHub.Config
-
 local CombatTab = BanditHub.Window:Tab({ Title = "Combat" })
+
 
 local Config = {
     Enabled = BanditHub.Toggles.silentAimEnabled or false,

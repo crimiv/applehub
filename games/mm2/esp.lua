@@ -1,10 +1,9 @@
 local WindUI = BanditHub.WindUI
 local utils = BanditHub.Utils
-local config = BanditHub.Config
 
 local VisualTab = BanditHub.Window:Tab({ Title = "Visual" })
 
-local espEnabled = BanditHub.Toggles.espEnabled or false
+local espEnabled
 local highlightInstances = {}
 local espUpdateCooldown = 0
 
@@ -18,13 +17,14 @@ local gunHighlightTimer = nil
 local function GetPlayerRoleColor(player)
     if not player then return nil end
     if utils.PlayerHasTool(player, "Knife") then
-        return config.colors.murderer
+        return Color3.fromRGB(255, 0, 0)
     elseif utils.PlayerHasTool(player, "Gun") then
-        return config.colors.sheriff
+        return Color3.fromRGB(0, 100, 255)
     else
-        return config.colors.innocent
+        return Color3.fromRGB(0, 255, 0)
     end
 end
+
 
 local function ClearESP()
     for _, highlight in pairs(highlightInstances) do
@@ -137,8 +137,9 @@ local function UpdateGunDropsHighlight(force)
             gunHighlightInstances[gd] = highlight
         end
         highlight.Adornee = gd
-        highlight.FillColor = config.colors.sheriff or Color3.fromRGB(0, 255, 255)
-        highlight.OutlineColor = config.colors.sheriff or Color3.fromRGB(0, 255, 255)
+        highlight.FillColor = Color3.fromRGB(0, 100, 255)
+        highlight.OutlineColor = Color3.fromRGB(0, 100, 255)
+
         seen[gd] = true
     end
 
@@ -224,10 +225,10 @@ VisualTab:Toggle({
             Content = espEnabled and "ESP Enabled" or "ESP Disabled",
             Duration = 2,
         })
-        if not espEnabled then
-            ClearESP()
-        else
+        if espEnabled then
             UpdateESP()
+        else
+            ClearESP()
         end
     end
 })
